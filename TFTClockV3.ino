@@ -7,31 +7,16 @@
 
 TFT_eSPI tft;
 OpenFontRender render;
-int i=0;
 
-//串口输出时间
-void printLocalTime()
-{
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("No time available (yet)");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
-
-//时间可用的回调函数
-void timeavailable(struct timeval *t)
-{
-  Serial.println("Got time adjustment from NTP!");
-  printLocalTime();
-}
+uint8_t now_date[16],now_hour[3],now_minute[3],now_second[3],colon[2];
+time_t now;
+char Date[16],tDate[16],Hour[3],tHour[3],Minute[3],tMinute[3],Second[3];
+struct tm timeinfo;
 
 void setup() {
   Serial.begin(115200);
   delay(100);
 
-  sntp_set_time_sync_notification_cb(timeavailable);
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
   sntp_setservername(0, "time.windows.com");
   sntp_init();
@@ -64,9 +49,10 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  render.setFontColor(TFT_WHITE,TFT_BLACK);
-  render.printf("HelloWorld");
-  render.seekCursor(0,10*i);
-  i++;
+  time(&now);
+  localtime_r(&now, &timeinfo);
+  //Serial.printf("%d-%d-%d %d:%d:%d\n",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday,timeinfo.tm_hour,timeinfo.tm_min,timeinfo.tm_sec);
+  render.setFontColor(TFT_WHITE);
+  render.printf("%d-%d-%d\n",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);
+  delay(1000);
 }
